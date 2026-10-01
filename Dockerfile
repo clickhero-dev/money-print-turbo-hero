@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.11-slim-bullseye
+FROM python:3.11-slim-bookworm
 
 # Set the working directory in the container
 WORKDIR /MoneyPrinterTurbo
@@ -11,8 +11,8 @@ ENV PYTHONPATH="/MoneyPrinterTurbo"
 
 # 本地用户默认继续优先使用国内镜像；GitHub Actions 发布 GHCR 镜像时使用 default，
 # 避免海外 runner 访问国内镜像过慢导致镜像发布长时间卡住。
-ARG DOCKER_BUILD_MIRROR=china
-ARG PIP_USE_OFFICIAL=0
+ARG DOCKER_BUILD_MIRROR=default
+ARG PIP_USE_OFFICIAL=1
 
 # 系统依赖安装需要同时满足两点：国内环境保留镜像回退能力，所有镜像均
 # 失败时必须让 Docker 构建立刻失败。旧循环最后执行的 sleep 总会返回 0，
@@ -23,8 +23,9 @@ RUN set -u; \
     write_debian_sources() { \
         main_url="$1"; \
         security_url="$2"; \
-        printf 'deb %s bullseye main\ndeb %s bullseye-updates main\ndeb %s bullseye-security main\n' \
+        printf 'deb %s bookworm main\ndeb %s bookworm-updates main\ndeb %s bookworm-security main\n' \
             "$main_url" "$main_url" "$security_url" > /etc/apt/sources.list; \
+        rm -f /etc/apt/sources.list.d/debian.sources; \
         rm -rf /var/lib/apt/lists/*; \
     }; \
     install_system_dependencies() { \
